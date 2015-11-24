@@ -1,0 +1,108 @@
+﻿@model IEnumerable<AppVehiculosMVC.Models.Vehiculo>
+
+@{
+    var title = ViewData["Title"];
+}
+
+<h2>Listado del tipo @title</h2>
+
+<div>
+    <input type="text" id="txtBus" placeholder="¿Qué buscamos...?"/>
+    <select id="ddlTipoBusqueda">
+        <option value="1" selected="selected">Matricula</option>
+        <option value="2">Marca</option>
+    </select>
+    <button type="button" id="btnBus" class="btn btn-default">
+        <i class="glyphicon glyphicon-search"></i> Buscar
+    </button>
+</div>
+
+<div id="contenido">
+    @Html.Partial("_listado", Model);
+</div>
+
+<div class="modal fade" id="digAlta">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Nuevo Vehiculo de tipo @title</h4>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="txtMarca" placeholder="Marca" /><br />
+                <input type="text" id="txtMatricula" placeholder="Matricula" /><br />
+                <input type="text" id="txtModelo" placeholder="Modelo" /><br />
+                <input type="text" id="txtPrecio" placeholder="Precio" /><br />
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnGua">Guardar</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<button id="btnAdd" type="button" class="btn btn-default">
+    <i class="glyphicon glyphicon-plus-sign"></i> Nuevo
+</button>
+
+@*<input type="hidden" value="@ViewBag.idTipo" id="idTipo"/>*@
+
+@section JS{
+    <script>
+        var tipo = @ViewBag.idTipo;
+
+        function buscar() {
+
+            var txt = $("#txtBus").val();
+            var buscando = $("#ddlTipoBusqueda").val();
+            var url = "@Url.Action("Buscar")" + "?idTipo=" + tipo + 
+                "&campo="+buscando+
+                "&contenido="+txt;
+            $("#contenido").load(encodeURI(url));
+        }
+
+        function alta() {
+
+            var obj = {
+                Marca: $("#txtMarca").val(),
+                Matricula: $("#txtMatricula").val(),
+                Modelo: $("#txtModelo").val(),
+                Precio: $("#txtPrecio").val(),
+                IdTipo: tipo
+            };
+
+            var object = JSON.stringify(obj);
+            var url = "@Url.Action("Alta")";
+
+            $.ajax({
+                url: url,
+                data: object,
+                dataType:"json",
+                headers: {"Content-Type":"application/json"},
+                type: "POST",
+                success: function(res) {
+                    $("#digAlta").modal("hide");
+                    if (res.IdVehiculo != 0) {
+                        $("#txtBus").val("");
+                        buscar();
+                    } else {
+                        alert("Error aquí");
+                    }
+                }
+
+            });
+
+        }
+
+        $("#btnBus").click(buscar);
+        $("#btnGua").click(alta);
+        $("#btnAdd").click(function() {
+            $("#digAlta").modal("toggle");
+        });
+    </script>
+}
+
+
+
